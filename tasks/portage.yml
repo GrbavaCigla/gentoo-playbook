@@ -1,0 +1,14 @@
+---
+- name: Copy make.conf if it doesn't exist
+  copy:
+    force: false
+    src: "{{ playbook_dir }}/files/portage/make.conf"
+    dest: /etc/portage/make.conf
+
+
+- name: Install portage related tools
+  portage:
+    quiet: true
+    state: present
+    package: "{{ item }}"
+  loop: "{{ portage_tools }}"

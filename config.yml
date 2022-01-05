@@ -1,0 +1,14 @@
+---
+# -----------
+#   Portage
+# -----------
+portage_tools:
+  - app-portage/pfl
+  - app-portage/flaggie
+  - app-portage/eix
+  - app-portage/repoman
+  - app-portage/mirrorselect
+  - app-portage/genlop
+  - app-portage/cpuid2cpuflags
+  - app-portage/elogv
+  - app-portage/gentoolkit
