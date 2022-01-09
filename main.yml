@@ -2,6 +2,6 @@
 - hosts: all
   vars_files:
     - config.yml
-  
+
   tasks:
     - import_tasks: tasks/portage.yml

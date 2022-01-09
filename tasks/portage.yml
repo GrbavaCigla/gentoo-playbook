@@ -1,14 +1,58 @@
 ---
-- name: Copy make.conf if it doesn't exist
+- name: Copy make.conf
   copy:
     force: false
     src: "{{ playbook_dir }}/files/portage/make.conf"
     dest: /etc/portage/make.conf
 
-
 - name: Install portage related tools
+  become: true
+  loop: "{{ portage_tools }}"
   portage:
-    quiet: true
     state: present
     package: "{{ item }}"
-  loop: "{{ portage_tools }}"
+
+- name: Get CPU flags
+  command: cpuid2cpuflags
+  register: cpuflags_register
+
+- set_fact:
+    cacheable: true
+    cpuflags: '{{ cpuflags_register.stdout.split(": ")[1] }}'
+
+- name: Edit CPU flags in make.conf
+  become: true
+  lineinfile:
+    path: /etc/portage/make.conf
+    regexp: "^CPU_FLAGS_X86="
+    line: 'CPU_FLAGS_X86="{{ cpuflags }}"'
+
+- set_fact:
+    cacheable: true
+    makeopts: "{{ ansible_memory_mb.real.total // 1024 + 1 }}"
+
+- name: Edit MAKEOPTS in make.conf
+  become: true
+  lineinfile:
+    path: /etc/portage/make.conf
+    regexp: "^MAKEOPTS="
+    line: 'MAKEOPTS="-j{{ makeopts }}"'
+
+- name: Install ltoize
+  become: true
+  portage:
+    package: sys-config/ltoize
+    state: present
+
+- name: Add sourcing to make.conf.lto
+  become: true
+  lineinfile:
+    path: /etc/portage/make.conf
+    # regexp: "^source /etc/portage/make.conf.lto$"
+    line: ^source /etc/portage/make.conf.lto"
+
+# - name: Enabling overlays
+#   loop: "{{ portage_tools }}"
+#   gentoo_overlay_repos:
+#     name: "{{ item }}"
+#     state: present
